@@ -8,7 +8,7 @@ class Handler(BaseHTTPRequestHandler):
         if self.path == "/command":
             try:
                 # wysyłamy GET do drugiego serwera
-                r = requests.get("http://192.168.74.64:8082/command", timeout=3)
+                r = requests.get("http://192.168.74.76:8083/command", timeout=3)
 
                 # przygotowujemy odpowiedź (np. treść odpowiedzi tamtego serwera)
                 self.send_response(200)

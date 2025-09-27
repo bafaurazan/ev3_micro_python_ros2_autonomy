@@ -13,7 +13,6 @@ SERVER_IP = "192.168.10.2"  # IP laptopa
 SERVER_PORT = 8081
 
 def http_get(path="/"):
-    # Tworzymy socket TCP
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     try:
         s.connect((SERVER_IP, SERVER_PORT))
@@ -23,19 +22,23 @@ def http_get(path="/"):
         return response
     except Exception as e:
         print("Błąd połączenia:", e)
-        return ""
+        return None
     finally:
         s.close()
 
 while True:
-    # Pobieramy komendę z serwera
     response = http_get("/command")
-    # weź ostatnią linię i usuń spacje
-    command = float(response.strip().splitlines()[-1])
 
-    motor_a.dc(command)  # obraca o 90 stopni od bieżącej pozycji
-    motor_b.dc(command)
+    if response:  # sprawdzamy czy coś przyszło
+        try:
+            # bierzemy ostatnią linię odpowiedzi
+            command = float(response.strip().splitlines()[-1])
+            command = command * 100
+            
+            # ustawiamy moc na oba silniki
+            motor_a.dc(command)
+            motor_b.dc(command)
+        except Exception as e:
+            print("Błąd parsowania odpowiedzi:", e)
 
-
-
-    time.sleep(0.001)  # czekamy 1 sekundę przed kolejnym GET
+    time.sleep(0.05)  # trochę większy odstęp (20 Hz zamiast 1000 Hz)
