@@ -1,6 +1,6 @@
 from http.server import BaseHTTPRequestHandler, HTTPServer
 
-PORT = 8081
+PORT = 8082
 COMMAND = "20"  # Możesz zmieniać "A" lub "B"
 
 class Handler(BaseHTTPRequestHandler):
