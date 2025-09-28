@@ -4,41 +4,49 @@ from pybricks.ev3devices import Motor
 from pybricks.parameters import Port
 import socket
 import time
+from pybricks.messaging import BluetoothMailboxClient, TextMailbox
+
+# This is the name of the remote EV3 or PC we are connecting to.
+SERVER = 'ev3dev'
+
+client = BluetoothMailboxClient()
+mbox = TextMailbox('cmd', client)
+
+print('establishing connection...')
+client.connect(SERVER)
+print('connected!')
 
 ev3 = EV3Brick()
 motor_a = Motor(Port.A)
 motor_b = Motor(Port.B)
+motor_c = Motor(Port.C)
+motor_d = Motor(Port.D)
 
-SERVER_IP = "192.168.10.2"  # IP laptopa
-SERVER_PORT = 8081
-
-def http_get(path="/"):
-    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    try:
-        s.connect((SERVER_IP, SERVER_PORT))
-        request = "GET {} HTTP/1.1\r\nHost: {}\r\n\r\n".format(path, SERVER_IP)
-        s.send(request.encode())
-        response = s.recv(1024).decode()
-        return response
-    except Exception as e:
-        print("Błąd połączenia:", e)
-        return None
-    finally:
-        s.close()
+# In this program, the client sends the first message and then waits for the
+# server to reply.
+mbox.send('hi')
 
 while True:
-    response = http_get("/command")
+    try:
+        msg = mbox.read()
+        # bierzemy ostatnią linię odpowiedzi
+        # command = float(response.strip().splitlines()[-1])
+        # command = command * 100
+        parts = msg.split()
+        linear_x = float(parts[0])
+        angular_z = float(parts[1])
+        print(linear_x)
+        print(angular_z)
+        # ustawiamy moc na oba silniki
+        left = (linear_x - angular_z)/2 * 100
+        right = (linear_x + angular_z)/2 * 100
 
-    if response:  # sprawdzamy czy coś przyszło
-        try:
-            # bierzemy ostatnią linię odpowiedzi
-            command = float(response.strip().splitlines()[-1])
-            command = command * 100
-            
-            # ustawiamy moc na oba silniki
-            motor_a.dc(command)
-            motor_b.dc(command)
-        except Exception as e:
-            print("Błąd parsowania odpowiedzi:", e)
+        motor_a.dc(-left)
+        motor_b.dc(left)
+        motor_c.dc(-right)
+        motor_d.dc(right)
+        
+    except Exception as e:
+        print("Błąd parsowania odpowiedzi:", e)
 
     time.sleep(0.05)  # trochę większy odstęp (20 Hz zamiast 1000 Hz)

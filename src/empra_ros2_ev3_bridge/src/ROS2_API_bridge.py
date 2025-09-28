@@ -8,6 +8,9 @@ import threading
 PORT = 8083
 CMD = "0.0"  # przechowuje np. prędkość liniową z Twist
 
+linear_x = "0.0"
+angular_z = "0.0"
+
 class CmdSubscriber(Node):
     def __init__(self):
         super().__init__('cmd_subscriber')
@@ -20,8 +23,15 @@ class CmdSubscriber(Node):
 
     def listener_callback(self, msg):
         global CMD
+        global linear_x
+        global angular_z
+
+        linear_x = msg.linear.x
+        angular_z = msg.angular.z
+        
         # przykładowo bierzemy tylko prędkość liniową w osi x
-        CMD = str(msg.linear.x)
+        CMD = f"{linear_x} {angular_z}"
+
         self.get_logger().info(f"Odebrano CMD: {CMD}")
 
 

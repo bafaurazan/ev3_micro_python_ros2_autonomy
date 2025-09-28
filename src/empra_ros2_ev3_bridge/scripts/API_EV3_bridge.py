@@ -9,7 +9,8 @@ class Handler(BaseHTTPRequestHandler):
             try:
                 # wysyłamy GET do drugiego serwera
                 r = requests.get("http://192.168.74.76:8083/command", timeout=3)
-
+                print(r)
+                
                 # przygotowujemy odpowiedź (np. treść odpowiedzi tamtego serwera)
                 self.send_response(200)
                 self.send_header("Content-type", "text/plain")
